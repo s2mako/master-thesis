@@ -1,0 +1,11 @@
+﻿.idea
+1_source/de/fontane/tagged
+formats
+1_source
+figures
+old/alice.json
+old/alice.tsv
+backlog_sources
+corpus/original
+**/__pycache__
+Scripts/helpers/tei
