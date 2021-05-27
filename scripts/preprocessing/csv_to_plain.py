@@ -37,8 +37,8 @@ def create_text(df, params):
     Creates a generator of tokens multiplied by their frequency
     Warning: Big text files may take very long to process
     """
-    # reduce df to bare necessities. token is index now. every row is a pure int vector.
-    df = df.set_index("token").drop(columns=['pos', 'lemma'] + [col for col in df.columns if col.endswith('_sum')])
+    # reduce df to bare necessities. lemma is index now. every row is a pure int vector.
+    df = df.set_index("lemma").drop(columns=['pos', 'token'] + [col for col in df.columns if col.endswith('_sum')])
     seg_split = ""
     # each column represents a segment
     for col in df.columns:

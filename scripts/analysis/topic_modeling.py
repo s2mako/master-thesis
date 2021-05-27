@@ -5,6 +5,8 @@ import gensim
 from gensim import corpora
 from gensim.models import CoherenceModel
 from matplotlib import pyplot as plt
+from pprint import pprint
+import pickle
 
 # ==================================
 # Parameters (need to be set)
@@ -21,7 +23,7 @@ step = 10
 
 format = "tkn"
 
-seglen = 50  # segment length
+seglen = 500  # segment length
 
 params = {"seglen": seglen, "mallet_path": mallet_path, "num_topics": num_topics,
           "iterations": iterations, "interval": interval, "start": start, "limit": limit, "step": step,
@@ -106,6 +108,7 @@ def read_corpus(dir):
     doc_list = []
     for file in dir:
         with file.open("r", encoding="utf-8") as f:
+            print("reading corpus...")
             doc = []
             for word in f.readlines():
                doc.append(word.rstrip("\n"))
@@ -126,11 +129,19 @@ def main(corpusdir, params):
     # Turns each document into a bag of words.
     corpus = [dictionary.doc2bow(doc) for doc in doc_list]
 
-    model, coherence_values = compute_coherence_values(params=params, dictionary=dictionary, corpus=corpus,
-                                                        texts=doc_list)  # Show graph
+   # model, coherence_values = compute_coherence_values(params=params, dictionary=dictionary, corpus=corpus,
+    #                                                    texts=doc_list)  # Show graph
 
-   # tm_mallet(doc_list)
-    # pprint(mallet_lda.show_topics(formatted=False))
+    mallet_lda = tm_mallet(doc_list)
+    pprint(mallet_lda.show_topics(formatted=False))
+
+    # Compute Coherence Score
+    print ("Computing coherence...")
+    coherence_model_ldamallet = CoherenceModel(model=mallet_lda, texts=doc_list, dictionary=dictionary, coherence='c_v')
+    coherence_ldamallet = coherence_model_ldamallet.get_coherence()
+    print('Coherence Score: ', coherence_ldamallet)
+
+    pickle.dump(mallet_lda, open("mallet_lda.pkl", "wb"))
 
 
 if __name__ == "__main__":
