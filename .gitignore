@@ -9,3 +9,9 @@ backlog_sources
 corpus/original
 **/__pycache__
 Scripts/helpers/tei
+2_tagged
+3_formats
+4_pseudoplain
+zz_old
+5_corpus
+6_results
