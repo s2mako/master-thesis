@@ -114,6 +114,7 @@ def main(sourcedir, corpusdir, stoplistfile, params):
     for file in sourcedir.glob("*.txt"):
         print(f"--{file.stem}")
         with file.open("r") as f:
+            filter(f)
             texts = split(f)
             texts = remove_quotes(texts)
             docs = create_docs(texts)

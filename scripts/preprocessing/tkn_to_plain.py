@@ -2,8 +2,6 @@
 # Import statements
 # =================================
 
-from library import segmenting
-
 
 # ====================================
 # FUNCTIONS

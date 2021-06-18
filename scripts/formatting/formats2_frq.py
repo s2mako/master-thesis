@@ -60,7 +60,7 @@ def save_allcounts(allcounts, frqfolder, params):
     allcounts = pd.DataFrame(allcounts).fillna(0)
     allcounts["sum"] = np.sum(allcounts, axis=1)
     allcounts.sort_values(by="sum", ascending=False, inplace=True)
-    filepath = join(frqfolder, "../..", "frq" + "-" + params["casing"] + ".csv")
+    filepath = join(frqfolder, "..\\..", "frq" + "-" + params["casing"] + ".csv")
     with open(filepath, "w", encoding="utf-8") as outfile:
         allcounts.to_csv(outfile, sep="\t")
     

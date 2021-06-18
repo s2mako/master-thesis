@@ -9,23 +9,24 @@ text constructed from derived format.
 # =================================
 
 from pathlib import Path
-from preprocessing import preprocess_tm, csv_to_plain, tkn_to_plain
-from test_scripts import shell_test
+import preprocess_tm, csv_to_plain, tkn_to_plain
+import tagged_to_plain
 
 # ==================================
 # Parameters In-Folder
 # ==================================
 
 active_segmentation = True
+seglen_write = 500  # as integer - determines segment length in preprocess_tm.py
 seglen_read = 5  # as integer - selects subfolder in 3_formats
-seglen_write = 50  # as integer - determines segment length in preprocess_tm.py
-filter = ["NN", "VV"]
+
+pos = ["NN", "VV"]
 format = "tkn"  # "tkn", "src", "original", "tdm", "ngr"
 step = "tm"  # "tm"|"pseudoplain"
 csv = "src"  # tdm|src
 
 params = {"seglen": seglen_write, "filter": filter, "format": format, "active_segmentation": active_segmentation,
-          "seglen_read": seglen_read}
+          "seglen_read": seglen_read, "seglen_write": seglen_write, "pos": pos}
 
 # ==================================
 # Files and folders
@@ -34,7 +35,9 @@ params = {"seglen": seglen_write, "filter": filter, "format": format, "active_se
 wdir = Path("../..")
 resourcesdir = wdir.joinpath("resources")
 stoplist = resourcesdir.joinpath("stoplist.txt")
+sourcedir = wdir.joinpath("0_source")
 plaindir = wdir.joinpath("1_plain")
+taggeddir = wdir.joinpath("2_tagged")
 formatsdir = wdir.joinpath("3_formats")
 pseudodir = wdir.joinpath("4_pseudoplain")
 # corpusdir = wdir.joinpath("5_corpus", format, str(seglen))
@@ -44,12 +47,13 @@ corpusdir = wdir.joinpath("5_corpus")
 tknsource = formatsdir.joinpath("tkn-tm")
 tdmsource = formatsdir.joinpath("tkn-tm")
 srcsource = formatsdir.joinpath("src", str(seglen_read))
+frqsource = formatsdir.joinpath("frq")
 # ngrdir = formatsdir.joinpath("ngr"+"-"+token+"-"+str(ngram), "")
 
 # pseudoplain target
 tknpseudodir = pseudodir.joinpath("tkn-tm")
-tdmpseudodir = pseudodir.joinpath("tdm", "_".join(filter))
-srcpseudodir = pseudodir.joinpath("src", str(seglen_read), "_".join(filter))
+#tdmpseudodir = pseudodir.joinpath("tdm", "_".join(filter))
+#srcpseudodir = pseudodir.joinpath("src", str(seglen_read), "_".join(filter))
 
 
 # ====================================
@@ -87,7 +91,9 @@ def get_sourcedir(format):
 # Call imported scripts
 # ==================================
 
+tagged_to_plain.main(taggeddir, plaindir, stoplist, params)
+# segmenter.main()
 # tkn_to_plain.main(tknsource, tknpseudodir)
 # csv_to_plain.main(get_csvsource(csv), get_csvpseudo(csv), params)
 # preprocess_tm.main(get_sourcedir(format), corpusdir, stoplist, params)
-shell_test.main(corpusdir)
+# shell_test.main(corpusdir)

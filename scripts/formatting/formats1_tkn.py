@@ -19,6 +19,7 @@ import numpy as np
 from os.path import join
 from collections import Counter
 
+
 # ====================================
 # FUNCTIONS
 # ====================================
@@ -39,36 +40,26 @@ def read_text(textfile):
 def select_features(tagged, params):
     features = []
     if params["token"] == "lemma":
-        features = [token.split("\t")[2] for token in tagged if len(token.split("\t"))==3]
-    elif params["token"] == "pos": 
-        features = [token.split("\t")[1] for token in tagged if len(token.split("\t"))==3]
-    elif params["token"] == "mixed": 
+        features = [token.split("\t")[2] for token in tagged if len(token.split("\t")) == 3]
+    elif params["token"] == "pos":
+        features = [token.split("\t")[1] for token in tagged if len(token.split("\t")) == 3]
+    elif params["token"] == "mixed":
         features = []
         for token in tagged:
             if len(token.split("\t")) == 3:
-                if token.split("\t")[1] in params["pos"]: 
+                if token.split("\t")[1] in params["pos"]:
                     features.append(token.split("\t")[2])
                 else:
                     features.append(token.split("\t")[1])
-    # custom feature set for tm:
-    elif params["token"] == "tm":
-        features = []
-        for token in tagged:
-            if len(token.split("\t")) == 3:
-                pos = token.split("\t")[1]
-                if any(str in pos for str in ["NN", "VV"]):
-                    features.append(token.split("\t")[2])
-                else:
-                    features.append(token.split("\t")[1])
-    features = "\n".join(features)    
+    features = "\n".join(features)
     return features
 
 
-def save_features(features, tknfolder, filename): 
-    filepath = join(tknfolder, filename+".txt")
+def save_features(features, tknfolder, filename):
+    filepath = join(tknfolder, filename + ".txt")
     with open(filepath, "w", encoding="utf-8") as outfile:
         outfile.write(features)
-    
+
 
 # ====================================
 # MAIN
@@ -81,10 +72,11 @@ def main(sourcefolder, tknfolder, params):
     allcounts = {}
     for textfile in glob.glob(join(sourcefolder, "*.txt")):
         filename = get_filename(textfile)
-        print("--"+filename)
+        print("--" + filename)
         tagged = read_text(textfile)
         features = select_features(tagged, params)
         save_features(features, tknfolder, filename)
+
 
 if __name__ == "__main__":
     main(sourcefolder, tknfolder, params)

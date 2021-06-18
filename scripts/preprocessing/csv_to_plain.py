@@ -1,9 +1,11 @@
 # =================================
 # Import statements
 # =================================
+import random
 
 import numpy as np
 import pandas as pd
+
 
 
 # ====================================
@@ -43,18 +45,27 @@ def create_text(df, params):
     # each column represents a segment
     for col in df.columns:
         yield seg_split  # is an empty string in first iteration
-        if params["seglen"] > 0: seg_split = "<SEG>\n"
+        if params["seglen"] > 0: seg_split = "<SEG>"
         # rows for current col
         for t, i in df[col].iteritems():
             for j in range(i):
                 # extract multiplier for current token in current column
                 yield t
-                yield "\n"
 
 
-def write_to_file(outfile, strings):
+def scramble(segments):
+    segment = []
+    for s in segments:
+        if s != "<SEG>":
+            segment.append(s)
+        else:
+            random.shuffle(segment)
+            yield " ".join(segment)
+
+
+def write_to_file(outfile, scramled):
     with outfile.open("w", encoding="utf-8") as f:
-        for s in strings:
+        for s in scramled:
             f.write(s)
 
 
@@ -81,9 +92,10 @@ def main(sourcedir, targetdir, params):
         print(f"--{file.stem}")
         df = read_tdm(file)
         pos_set = get_pos(params["filter"], df.pos)
-        text = create_text(df[df.pos.isin(pos_set)], params)
+        segments = create_text(df[df.pos.isin(pos_set)], params)
+        scrambled = scramble(segments)
         outfile = get_outfile(file, targetdir)
-        write_to_file(outfile, text)
+        write_to_file(outfile, scrambled)
 
 
 if __name__ == "__main__":
