@@ -9,8 +9,12 @@ text constructed from derived format.
 # =================================
 
 from pathlib import Path
-import preprocess_tm, csv_to_plain, tkn_to_plain
-import tagged_to_plain
+import preprocess_0_tagged_to_plain
+import preprocess_1_tkn_to_plain
+import preprocess_2_frq_to_plain
+#import preprocess_3_src_to_plain
+#import preprocess_4_ngr_to_plain
+import preprocess
 
 # ==================================
 # Parameters In-Folder
@@ -20,7 +24,7 @@ active_segmentation = True
 seglen_write = 500  # as integer - determines segment length in preprocess_tm.py
 seglen_read = 5  # as integer - selects subfolder in 3_formats
 
-pos = ["NN", "VV"]
+pos = ["NN", "NNS"]
 format = "tkn"  # "tkn", "src", "original", "tdm", "ngr"
 step = "tm"  # "tm"|"pseudoplain"
 csv = "src"  # tdm|src
@@ -36,15 +40,16 @@ wdir = Path("../..")
 resourcesdir = wdir.joinpath("resources")
 stoplist = resourcesdir.joinpath("stoplist.txt")
 sourcedir = wdir.joinpath("0_source")
-plaindir = wdir.joinpath("1_plain")
-taggeddir = wdir.joinpath("2_tagged")
+plaindir = wdir.joinpath("1_plain", format)
+taggedfile = wdir.joinpath("2_tagged", "tagged.txt")
 formatsdir = wdir.joinpath("3_formats")
-pseudodir = wdir.joinpath("4_pseudoplain")
+pseudodir = wdir.joinpath("4_plain")
 # corpusdir = wdir.joinpath("5_corpus", format, str(seglen))
 corpusdir = wdir.joinpath("5_corpus")
 
 # format sources
-tknsource = formatsdir.joinpath("tkn-tm")
+tknsource = formatsdir.joinpath("tkn")
+tknfile = tknsource.joinpath(f"tkn-{'_'.join(pos)}.txt")
 tdmsource = formatsdir.joinpath("tkn-tm")
 srcsource = formatsdir.joinpath("src", str(seglen_read))
 frqsource = formatsdir.joinpath("frq")
@@ -91,9 +96,7 @@ def get_sourcedir(format):
 # Call imported scripts
 # ==================================
 
-tagged_to_plain.main(taggeddir, plaindir, stoplist, params)
-# segmenter.main()
-# tkn_to_plain.main(tknsource, tknpseudodir)
-# csv_to_plain.main(get_csvsource(csv), get_csvpseudo(csv), params)
-# preprocess_tm.main(get_sourcedir(format), corpusdir, stoplist, params)
-# shell_test.main(corpusdir)
+#preprocess_0_tagged_to_plain.main(taggedfile, pseudodir, params)
+#preprocess_0_tagged_to_plain.main(tknfile, pseudodir, params)
+#preprocess_2_frq_to_plain.main(frqsource, pseudodir, params)
+preprocess.main(pseudodir, corpusdir, stoplist, params)

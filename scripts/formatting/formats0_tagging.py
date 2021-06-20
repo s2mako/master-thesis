@@ -39,14 +39,17 @@ def read_text(textfile):
 def apply_tagger(text, params):
     tagger = treetaggerwrapper.TreeTagger(TAGLANG=params["lang"])
     tagged = tagger.tag_text(text)
-    tagged = "\n".join(tagged)
+    tagged = [tag.replace("\t", "_") for tag in tagged]
+    tagged = " ".join(tagged)
     return tagged
 
 
 def save_tagged(tagged, taggedfolder, filename): 
-    filepath = join(taggedfolder, filename+".txt")
-    with open(filepath, "w", encoding="utf-8") as outfile:
+    filepath = join(taggedfolder, "tagged.txt")
+    with open(filepath, "a", encoding="utf-8") as outfile:
+        outfile.write(f"{filename}\t")
         outfile.write(tagged)
+        outfile.write("\n")
     
 
 # ====================================

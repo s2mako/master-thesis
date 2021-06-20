@@ -10,72 +10,57 @@ Create a derived format from full, annotated text.
 # IMPORTS
 # ====================================
 
-import glob
 import os
-import re
-import csv
-import pandas as pd
-import numpy as np
 from os.path import join
-from collections import Counter
 
 
 # ====================================
 # FUNCTIONS
 # ====================================
 
-
-def get_filename(textfile):
-    filename, ext = os.path.basename(textfile).split(".")
-    return filename
-
-
-def read_text(textfile):
-    with open(textfile, "r") as infile:
-        tagged = infile.read().split("\n")
-        tagged = [token for token in tagged if token]
-        return tagged
-
-
 def select_features(tagged, params):
     features = []
     if params["token"] == "lemma":
-        features = [token.split("\t")[2] for token in tagged if len(token.split("\t")) == 3]
+        features = [token.split("_")[2] for token in tagged if len(token.split("_")) == 3]
     elif params["token"] == "pos":
-        features = [token.split("\t")[1] for token in tagged if len(token.split("\t")) == 3]
+        features = [token.split("_")[1] for token in tagged if len(token.split("_")) == 3]
     elif params["token"] == "mixed":
         features = []
         for token in tagged:
-            if len(token.split("\t")) == 3:
-                if token.split("\t")[1] in params["pos"]:
-                    features.append(token.split("\t")[2])
+            if len(token.split("_")) == 3:
+                if token.split("_")[1] in params["pos"]:
+                    features.append(token)
                 else:
-                    features.append(token.split("\t")[1])
-    features = "\n".join(features)
+                    features.append(token.split("_")[1])
+    features = " ".join(features)
     return features
 
 
-def save_features(features, tknfolder, filename):
-    filepath = join(tknfolder, filename + ".txt")
-    with open(filepath, "w", encoding="utf-8") as outfile:
+def save_features(features, tknfolder, params, textfilename):
+    outfilename = "tkn-" + "_".join(params["pos"])
+    filepath = join(tknfolder, f"{outfilename}.txt")
+    with open(filepath, "a", encoding="utf-8") as outfile:
+        outfile.write(textfilename)
+        outfile.write("\t")
         outfile.write(features)
+        outfile.write("\n")
 
 
 # ====================================
 # MAIN
 # ====================================
 
-def main(sourcefolder, tknfolder, params):
+def main(taggedfile, tknfolder, params):
     print("\nformats1_tkn")
     if not os.path.exists(tknfolder):
         os.makedirs(tknfolder)
-    allcounts = {}
-    for textfile in glob.glob(join(sourcefolder, "*.txt")):
-        filename = get_filename(textfile)
-        print("--" + filename)
-        tagged = read_text(textfile)
-        features = select_features(tagged, params)
-        save_features(features, tknfolder, filename)
+    with open(taggedfile, "r", encoding="utf-8") as f:
+        for text in f.read().split("\n"):
+            filename, content = text.split("\t")
+            print("--" + filename)
+            tagged = content.split(" ")
+            features = select_features(tagged, params)
+            save_features(features, tknfolder, params, filename)
 
 
 if __name__ == "__main__":

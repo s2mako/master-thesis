@@ -48,33 +48,35 @@ def scramble_segments(segments, params):
     scrambled = []
     for seg in segments: 
         random.shuffle(seg) # scrambling
-        seg = "\n".join(seg)
+        seg = " ".join(seg)
         scrambled.append(seg)
     return scrambled
    
 
-def save_scrambled(scrambled, srcfolder, filename):
-    filepath = join(srcfolder, filename+".txt")
-    scrambled = "\n<SEG>\n".join(scrambled)    
-    with open(filepath, "w", encoding="utf-8") as outfile:
+def save_scrambled(scrambled, srcfolder, params):
+    seglen = params["seglen"]
+    filepath = join(srcfolder, f"src-{seglen}.txt")
+    scrambled = "\n".join(scrambled)
+    with open(filepath, "a", encoding="utf-8") as outfile:
         outfile.write(scrambled)
-
+        outfile.write("\n")
 
 # ====================================
 # MAIN
 # ====================================
 
-def main(sourcefolder, srcfolder, params):
+def main(taggedfile, srcfolder, params):
     print("\nformats4_tdm")
     if not os.path.exists(srcfolder):
         os.makedirs(srcfolder)
-    for textfile in glob.glob(join(sourcefolder, "*.txt")):
-        filename = get_filename(textfile)
-        print("--"+filename)
-        tagged = read_text(textfile).split("\n")
-        segments = create_segments(tagged, params)
-        scrambled = scramble_segments(segments, params)
-        save_scrambled(scrambled, srcfolder, filename)
+    with open(taggedfile, "r", encoding="utf-8") as f:
+        for text in f.read().split("\n"):
+            filename, content = text.split("\t")
+            print("--" + filename)
+            tagged = content.split(" ")
+            segments = create_segments(tagged, params)
+            scrambled = scramble_segments(segments, params)
+            save_scrambled(scrambled, srcfolder, params)
 
 if __name__ == "__main__":
     main(sourcefolder, srcfolder, params)

@@ -1,47 +1,46 @@
-import re
+# heavily inspired by https://www.machinelearningplus.com/topic-modeling-gensim-python/#14computemodelperplexityandcoherencescore
+
 from pathlib import Path
 
 import gensim
 from gensim import corpora
-from gensim.models import CoherenceModel
+from gensim.models import CoherenceModel, LdaModel
 from matplotlib import pyplot as plt
 from pprint import pprint
 import pickle
+from gensim.test.utils import datapath
 
 # ==================================
 # Parameters (need to be set)
 # ==================================
 
-mallet_path = r"C:\mallet\bin\mallet"
+MALLET_PATH = r"C:\mallet\bin\mallet"
 # LDA parameters
-num_topics = 70
-iterations = 1000
-interval = 10  # 10 is MALLET's default
-start = 1
-limit = 200
-step = 10
+NUM_TOPICS = 50
+ITERATIONS = 1000
+INTERVAL = 10  # 10 is MALLET's default
+START = 20
+LIMIT = NUM_TOPICS
+STEP = 10
+#
+seglen = "500"
 
 format = "tkn"
-
-seglen = 500  # segment length
-
-params = {"seglen": seglen, "mallet_path": mallet_path, "num_topics": num_topics,
-          "iterations": iterations, "interval": interval, "start": start, "limit": limit, "step": step,
-          "format": format}
 
 # ==================================
 # Files and folders (don't change)
 # ==================================
 
 wdir = Path("../..")
-corpusdir = wdir.joinpath("5_corpus", format)
+#corpusdir = wdir.joinpath("5_corpus", format)
+corpusdir = wdir.joinpath("5_corpus")
 
 
 # ====================================
 # FUNCTIONS
 # ====================================
 
-def compute_coherence_values(dictionary, corpus, texts, params):
+def compute_coherence_values(dictionary, corpus, texts):
     """
     Compute c_v coherence for various number of topics
 
@@ -57,92 +56,79 @@ def compute_coherence_values(dictionary, corpus, texts, params):
     model_list : List of LDA topic models
     coherence_values : Coherence values corresponding to the LDA model with respective number of topics
     """
-    # paramters
-    mallet_path = params["mallet_path"]
-    start = params["start"]
-    limit = params["limit"]
-    step = params["step"]
 
     coherence_values = []
-    for num_topics in range(start, limit, step):
-        model = gensim.models.wrappers.LdaMallet(mallet_path=mallet_path, corpus=corpus, num_topics=num_topics,
+    model_list = []
+    for num_topics in range(START, LIMIT, STEP):
+        model = gensim.models.wrappers.LdaMallet(mallet_path=MALLET_PATH, corpus=corpus, num_topics=num_topics,
                                                  id2word=dictionary)
+        model_list.append(model)
         coherencemodel = CoherenceModel(model=model, texts=texts, dictionary=dictionary, coherence='c_v')
         coherence_values.append(coherencemodel.get_coherence())
 
-    x = range(start, limit, step)
-    plt.plot(x, coherence_values)
-    plt.xlabel("Num Topics")
-    plt.ylabel("Coherence score")
-    plt.legend(("coherence_values"), loc='best')
-    plt.show()
-
-    return model, coherence_values
+    return model_list, coherence_values
 
 
-def tm_mallet(doc_list):
-    print("Creating BOW-Corpus...")
-    # Creates, which is a mapping of word IDs to words.
-    words = corpora.Dictionary(doc_list)
-    # Turns each document into a bag of words.
-    corpus = [words.doc2bow(doc) for doc in doc_list]
-
+def tm_mallet(dictionary, corpus):
     print("Starting Topic Modeling (Mallet)...")
-
-    # creating LDA model using mallet
-    mallet_lda = gensim.models.wrappers.LdaMallet(mallet_path=mallet_path, corpus=corpus, num_topics=num_topics,
-                                                  id2word=words, iterations=iterations,
-                                                  optimize_interval=interval)
-
-    return mallet_lda
+    return gensim.models.wrappers.LdaMallet(mallet_path=MALLET_PATH, corpus=corpus, num_topics=NUM_TOPICS, id2word=dictionary, iterations=ITERATIONS)
 
 
-def select_folder(dir, params):
-    if int(params["seglen"]):
-        return dir.glob(f"{str(params['seglen'])}/*.txt")
-    else:
-        return dir.glob(f"*.txt")
+def tm_gensim(dictionary, corpus):
+    print("Starting Topic Modeling (Gensim)...")
+    return LdaModel(corpus, num_topics=NUM_TOPICS, id2word=dictionary)
 
 
-def read_corpus(dir):
-    doc_list = []
-    for file in dir:
-        with file.open("r", encoding="utf-8") as f:
-            print("reading corpus...")
-            doc = []
-            for word in f.readlines():
-               doc.append(word.rstrip("\n"))
-        doc_list.append(doc)
-    return doc_list
+def read_file(file):
+    docs = []
+    for l in file.readlines():
+        docs.append(l.split(" "))
+    return docs
+
 
 # ====================================
 # MAIN
 # ====================================
 
-def main(corpusdir, params):
+def main():
     print("topic_modeling")
-    print()
-    corpusdir = select_folder(corpusdir, params)
-    # splitting segmented text files to docs
-    doc_list = read_corpus(corpusdir)
-    dictionary = corpora.Dictionary(doc_list)
-    # Turns each document into a bag of words.
-    corpus = [dictionary.doc2bow(doc) for doc in doc_list]
+    for file in corpusdir.glob(f"*-{seglen}"):
+        with file.open("r") as f:
+            print("--" + file.stem)
+            # splitting lines to docs
+            texts = read_file(f)
+            # build a dictionary
+            dictionary = corpora.Dictionary(texts)
+            # Turns each document into a bag of words.
+            corpus = [dictionary.doc2bow(text) for text in texts]
+            # creating MALLET model
+            lda_model= tm_mallet(dictionary, corpus)
+            lda_model.save(r"C:\Users\martin\git\master-thesis\6_results" + f"\model-{NUM_TOPICS}-{file.stem}")
 
-   # model, coherence_values = compute_coherence_values(params=params, dictionary=dictionary, corpus=corpus,
-    #                                                    texts=doc_list)  # Show graph
+            # Compute Coherence Score
+            #model_list, coherence_values = compute_coherence_values(dictionary=dictionary, corpus=corpus, texts=texts)
+            # # Show graph
+            # x = range(START, LIMIT, STEP)
+            # plt.plot(x, coherence_values)
+            # plt.xlabel("Num Topics")
+            # plt.ylabel("Coherence score")
+            # plt.legend(("coherence_values"), loc='best')
+            # plt.show()
+            #
+            # # Print the coherence scores
+            # for m, cv in zip(x, coherence_values):
+            #     print("Num Topics =", m, " has Coherence Value of", round(cv, 4))
 
-    mallet_lda = tm_mallet(doc_list)
-    pprint(mallet_lda.show_topics(formatted=False))
 
-    # Compute Coherence Score
-    print ("Computing coherence...")
-    coherence_model_ldamallet = CoherenceModel(model=mallet_lda, texts=doc_list, dictionary=dictionary, coherence='c_v')
-    coherence_ldamallet = coherence_model_ldamallet.get_coherence()
-    print('Coherence Score: ', coherence_ldamallet)
+            # # Compute Coherence Score
+            # print ("Computing coherence...")
+            # coherence_model_ldamallet = CoherenceModel(model=mallet_lda, texts=doc_list, dictionary=dictionary, coherence='c_v')
+            # #coherence_ldamallet = coherence_model_ldamallet.get_coherence()
+            # print('Coherence Score: ', coherence_ldamallet)
 
-    pickle.dump(mallet_lda, open("mallet_lda.pkl", "wb"))
 
+
+#    pickle.dump(mallet_lda, open("mallet_lda.pkl", "wb"))
 
 if __name__ == "__main__":
-    main(corpusdir, params)
+    main()
