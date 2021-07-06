@@ -11,7 +11,7 @@ Create a derived format from full, annotated text.
 # ====================================
 
 import os
-from os.path import join
+from os.path import join, exists
 
 
 # ====================================
@@ -37,7 +37,7 @@ def select_features(tagged, params):
 
 
 def save_features(features, tknfolder, params, textfilename):
-    outfilename = "tkn-" + "_".join(params["pos"])
+    outfilename = "tkn-" + "_".join(sorted(params["pos"]))
     filepath = join(tknfolder, f"{outfilename}.txt")
     with open(filepath, "a", encoding="utf-8") as outfile:
         outfile.write(textfilename)
@@ -45,6 +45,16 @@ def save_features(features, tknfolder, params, textfilename):
         outfile.write(features)
         outfile.write("\n")
 
+
+def check_outfile_path(srcfolder, params):
+    pos = params["pos"]
+    filename = f"tkn-{'_'.join(pos)}.txt"
+    outfile_path = join(srcfolder, filename)
+    if exists(outfile_path):
+        print("--clearing existing file: " + filename)
+        f = open(outfile_path, "w")
+        f.close()
+    return outfile_path
 
 # ====================================
 # MAIN
@@ -54,6 +64,7 @@ def main(taggedfile, tknfolder, params):
     print("\nformats1_tkn")
     if not os.path.exists(tknfolder):
         os.makedirs(tknfolder)
+    outfile_path = check_outfile_path(tknfolder, params)  # deletes content of existing file
     with open(taggedfile, "r", encoding="utf-8") as f:
         for text in f.read().split("\n"):
             filename, content = text.split("\t")

@@ -29,34 +29,33 @@ def get_filename(textfile):
     return filename
 
 
-def read_text(textfile):
-    with open(textfile, "r") as infile:
-        tagged = infile.read().split("\n")
-        tagged = [token for token in tagged if token]
-        return tagged
+def read_text(text):
+    tagged = text.split(" ")
+    tagged = [token for token in tagged if token]
+    return tagged
 
 
 def select_features(tagged, params):
     features = []
     if params["token"] == "lemma":
         if params["pos"] == "all": 
-            features = [token.split("\t")[2] for token in tagged if len(token.split("\t"))== 3]
+            features = [token.split("_")[2] for token in tagged if len(token.split("_"))== 3]
         else: 
-            features = [token.split("\t")[2] for token in tagged if len(token.split("\t"))== 3 and token.split("\t")[1] in params["pos"]]
+            features = [token.split("_")[2] for token in tagged if len(token.split("_"))== 3 and token.split("_")[1] in params["pos"]]
     if params["token"] == "pos":
         if params["pos"] == "all": 
-            features = [token.split("\t")[1] for token in tagged if len(token.split("\t"))==3]
+            features = [token.split("_")[1] for token in tagged if len(token.split("_"))==3]
         else: 
-            features = [token.split("\t")[1] for token in tagged if len(token.split("\t"))==3 and token.split("\t")[1] in params["pos"]]
+            features = [token.split("_")[1] for token in tagged if len(token.split("_"))==3 and token.split("_")[1] in params["pos"]]
     if params["token"] == "wordform":
         if params["pos"] == "all": 
-            features = [token.split("\t")[0].lower() for token in tagged if len(token.split("\t"))==3]
+            features = [token.split("_")[0].lower() for token in tagged if len(token.split("_"))==3]
         else: 
-            features = [token.split("\t")[0].lower() for token in tagged if len(token.split("\t"))==3 and token.split("\t")[1] in params["pos"]]
+            features = [token.split("_")[0].lower() for token in tagged if len(token.split("_"))==3 and token.split("_")[1] in params["pos"]]
     return features
 
 
-def create_ngrams(ngrams, params): 
+def create_ngrams(ngrams, params):
     ngrams = zip(*[ngrams[i:] for i in range(params["ngram"])])
     ngrams = [" ".join(ngram) for ngram in ngrams]
     return ngrams
@@ -70,12 +69,12 @@ def save_features(ngrams, ngrfolder, filename):
 
 
 
-def count_allngrams(allngrams):
+def count_allngrams(allngrams, params):
     from collections import Counter
     allcounts = dict(Counter(allngrams))
     filteredcounts = dict()
     for (key, value) in allcounts.items():
-        if value > 5:
+        if value > params["threshold"]:
             filteredcounts[key] = value
     print(filteredcounts)
     return filteredcounts
@@ -85,7 +84,7 @@ def save_counts(counts, ngrfolder):
     counts = pd.Series(counts)
     counts.sort_values(ascending=False, inplace=True)
     print(counts.head(20))
-    with open(join(ngrfolder, "allngrs.tsv"), "w", encoding="utf8") as outfile: 
+    with open(join(ngrfolder, "allngrs.tsv"), "w", encoding="utf8") as outfile:
         counts.to_csv(outfile, sep="\t")
     
 
@@ -95,21 +94,21 @@ def save_counts(counts, ngrfolder):
 # MAIN
 # ====================================
 
-def main(taggedfolder, ngrfolder, params):
+def main(taggedfile, ngrfolder, params):
     print("\nformats5_ngr")
     if not os.path.exists(ngrfolder):
         os.makedirs(ngrfolder)
-    allcounts = {}
     allngrams = []
-    for textfile in glob.glob(join(taggedfolder, "*.txt")):
-        filename = get_filename(textfile)
-        print("--"+filename)
-        tagged = read_text(textfile)
-        features = select_features(tagged, params)
-        ngrams = create_ngrams(features, params)
-        allngrams.extend(ngrams)
-        save_features(ngrams, ngrfolder, filename)
-    filteredcounts = count_allngrams(allngrams)
+    with open(taggedfile, "r", encoding="utf-8") as f:
+        for text in f.read().split("\n"):
+            filename, content = text.split("\t")
+            print("--"+filename)
+            tagged = read_text(content)
+            features = select_features(tagged, params)
+            ngrams = create_ngrams(features, params)
+            allngrams.extend(ngrams)
+            #save_features(ngrams, ngrfolder, filename)
+    filteredcounts = count_allngrams(allngrams, params)
     save_counts(filteredcounts, ngrfolder)
 
 

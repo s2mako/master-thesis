@@ -16,7 +16,7 @@ import re
 import csv
 import pandas as pd
 import numpy as np
-from os.path import join
+from os.path import join, exists
 import random
 
 # ====================================
@@ -53,21 +53,32 @@ def scramble_segments(segments, params):
     return scrambled
    
 
-def save_scrambled(scrambled, srcfolder, params):
-    seglen = params["seglen"]
-    filepath = join(srcfolder, f"src-{seglen}.txt")
+def save_scrambled(scrambled, outfile_path, params):
     scrambled = "\n".join(scrambled)
-    with open(filepath, "a", encoding="utf-8") as outfile:
+    with open(outfile_path, "a", encoding="utf-8") as outfile:
         outfile.write(scrambled)
         outfile.write("\n")
+
+
+def check_outfile_path(srcfolder, params):
+    seglen = params["seglen"]
+    filename = f"src-{seglen}.txt"
+    outfile_path = join(srcfolder, filename)
+    if exists(outfile_path):
+        print("--clearing existing file: " + filename)
+        f = open(outfile_path, "w")
+        f.close()
+    return outfile_path
 
 # ====================================
 # MAIN
 # ====================================
 
+
 def main(taggedfile, srcfolder, params):
-    print("\nformats4_tdm")
-    if not os.path.exists(srcfolder):
+    print("\nformats4_src")
+    outfile_path = check_outfile_path(srcfolder, params)  # deletes content of existing file
+    if not exists(srcfolder):
         os.makedirs(srcfolder)
     with open(taggedfile, "r", encoding="utf-8") as f:
         for text in f.read().split("\n"):
@@ -76,7 +87,7 @@ def main(taggedfile, srcfolder, params):
             tagged = content.split(" ")
             segments = create_segments(tagged, params)
             scrambled = scramble_segments(segments, params)
-            save_scrambled(scrambled, srcfolder, params)
+            save_scrambled(scrambled, outfile_path, params)
 
 if __name__ == "__main__":
     main(sourcefolder, srcfolder, params)

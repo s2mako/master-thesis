@@ -1,7 +1,12 @@
-from pathlib import Path
+from os.path import exists, join
 
-def segmenting(str_iterator, seglen):
-    i = 0
-    for s in str_iterator:
-        if (i < seglen):
-            yield s
+
+def check_outfile_path(srcfolder, params):
+    seglen = params["seglen"]
+    filename = f"src-{seglen}.txt"
+    outfile_path = join(srcfolder, filename)
+    if exists(outfile_path):
+        print("--clearing existing file: " + filename)
+        f = open(outfile_path, "w")
+        f.close()
+    return outfile_path

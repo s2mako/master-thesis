@@ -29,24 +29,26 @@ def get_filename(textfile):
     return filename
 
 
-def read_text(textfile):
-    with open(textfile, "r") as infile:
-        tagged = infile.read().split("\n")
-        tagged = [token for token in tagged if token]
-        return tagged
+def read_text(text):
+    tagged = text.split(" ")
+    tagged = [token for token in tagged if token]
+    return tagged
+
 
 
 def select_features(tagged, params):
     if params["token"] == "lemma":
-        if params["pos"] == "all": 
-            features = [token.split("\t")[2] for token in tagged if len(token.split("\t"))== 3]
-        else: 
-            features = [token.split("\t")[2] for token in tagged if len(token.split("\t"))== 3 and token.split("\t")[1] in params["pos"]]
+        if params["pos"] == "all":
+            features = [token.split("_")[2] for token in tagged if len(token.split("_")) == 3]
+        else:
+            features = [token.split("_")[2] for token in tagged if
+                        len(token.split("_")) == 3 and token.split("_")[1] in params["pos"]]
     if params["token"] == "pos":
-        if params["pos"] == "all": 
-            features = [token.split("\t")[1] for token in tagged if len(token.split("\t"))==3]
-        else: 
-            features = [token.split("\t")[1] for token in tagged if len(token.split("\t"))==3 and token.split("\t")[1] in params["pos"]]
+        if params["pos"] == "all":
+            features = [token.split("_")[1] for token in tagged if len(token.split("_")) == 3]
+        else:
+            features = [token.split("_")[1] for token in tagged if
+                        len(token.split("_")) == 3 and token.split("_")[1] in params["pos"]]
     features = "\n".join(features)
     return features
 
@@ -68,19 +70,19 @@ def save_features(features, ngrfolder, filename):
 # MAIN
 # ====================================
 
-def main(sourcefolder, ngrfolder, params):
+def main(taggedfile, ngrfolder, params):
     print("\nformats5_sel")
     if not os.path.exists(ngrfolder):
         os.makedirs(ngrfolder)
-    allcounts = {}
-    for textfile in glob.glob(join(sourcefolder, "*.txt")):
-        filename = get_filename(textfile)
-        print("--"+filename)
-        tagged = read_text(textfile)
-        features = select_features(tagged, params)
-        save_features(features, ngrfolder, filename)
-        #ngrams = create_ngrams(features, params)
-        #save_features(ngrams, ngrfolder, filename)
+    with open(taggedfile, "r", encoding="utf-8") as f:
+        for text in f.read().split("\n"):
+            filename, content = text.split("\t")
+            print("--"+filename)
+            tagged = read_text(content)
+            features = select_features(tagged, params)
+            save_features(features, ngrfolder, filename)
+            ngrams = create_ngrams(features, params)
+            #save_features(ngrams, ngrfolder, filename)
 
 if __name__ == "__main__":
     main(sourcefolder, ngrfolder, params)

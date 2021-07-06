@@ -60,7 +60,6 @@ def main(plainfolder, taggedfolder, params):
     print("\nformats0_tagging")
     if not os.path.exists(taggedfolder):
         os.makedirs(taggedfolder)
-    allcounts = {}
     for textfile in glob.glob(join(plainfolder, "*.txt")):
         filename = get_filename(textfile)
         print("--"+filename)

@@ -22,34 +22,53 @@ def create_text(lines):
         if len(l.split("\t")) == 2:
             tkn_info = l.split("\t")[0]
             count = int(l.split("\t")[1])
-            resolved = ""
             for i in range(count):
                 text.append(tkn_info)
     return text
 
 
-def save_scrambled(segments, srcfolder, params):
-    seglen = params["seglen"]
-    filepath = join(srcfolder, f"frq-{seglen}.txt")
-    with open(filepath, "a", encoding="utf-8") as outfile:
+def save_scrambled(segments, outfile_path):
+    with open(outfile_path, "a", encoding="utf-8") as outfile:
         for seg in segments:
             outfile.write(" ".join(seg))
             outfile.write("\n")
 
 
+def check_outfile_path(targetdir, params):
+    seglen = params["seglen"]
+    filename = f"frq-{seglen}.txt"
+    outfile_path = targetdir.joinpath(filename)
+    if outfile_path.exists():
+        print("--deleting existing file: " + filename)
+        outfile_path.unlink()
+    return outfile_path
+
+
+def read_file(file):
+    """
+    Removes empty lines and returns lines
+    """
+    return file.read().split("\n\n")
+
+
+
 # ====================================
 # MAIN
 # ====================================
+
+
+
 def main(sourcedir, targetdir, params):
     print("running: frq_to_plain")
+    outfile_path = check_outfile_path(targetdir, params)  # deletes existing file
     for file in sourcedir.glob("*.txt"):
         with file.open("r") as f:
             print(f"--{file.stem}")
-            lines = f.read().splitlines()
+            lines = read_file(f)
             tagged = create_text(lines)
             scrambled = scramble(tagged)
             segments = create_segments(scrambled, params)
-            save_scrambled(segments, targetdir, params)
+            save_scrambled(segments, outfile_path)
 
 
 if __name__ == "__main__":
