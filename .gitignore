@@ -11,7 +11,13 @@ corpus/original
 Scripts/helpers/tei
 2_tagged
 3_formats
-4_pseudoplain
+4_plain
 zz_old
 5_corpus
-6_results
+6_models
+0_source
+1_plain
+test
+1_plain
+scripts/test_scripts
+7_scores
