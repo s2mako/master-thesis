@@ -1,12 +1,24 @@
+from pathlib import Path
+
 from gensim.utils import SaveLoad
 
 from gensim.models.coherencemodel import CoherenceModel
 
+measure = "c_v"
 
-def get_coherence(model):
-    cm = CoherenceModel(model=model, coherence='cv')
-    print(cm.get_coherence())
+# ==================================
+# Files and folders
+# ==================================
 
+wdir = Path("../..")
+modelsdir = wdir.joinpath("7_evaluation", "gensim", "models")
+seglen = 500
+topic_count = 1
+
+
+# ====================================
+# FUNCTIONS
+# ====================================
 
 def create_outfile_path(in_file, scoresdir, params):
     palmettodir = scoresdir.joinpath("palmetto")
@@ -19,12 +31,17 @@ def create_outfile_path(in_file, scoresdir, params):
     return outfile_path
 
 
-def main(modelsdir, scoresdir, params):
+# ====================================
+# MAIN
+# ====================================
+
+def main():
     print("gensim coherence")
-    for file in modelsdir.glob(f"*-{params['topic_count']}-{params['seglen']}.bin"):
+    for file in modelsdir.glob(f"*_{seglen}-{topic_count}*.bin"):
         print(f"--{file.name}")
-        #outfile_path = create_outfile_path(file, scoresdir, params)  # deletes existing file
-        model = SaveLoad.load(str(file.resolve()))
-        scores = get_coherence(model)
-        # scores = yield_score()
-        #write_to_file(scores, outfile_path)
+        model = SaveLoad.load(str(file))
+        print(model.get_coherence())
+        # write_to_file(scores, outfile_path)
+
+if __name__ == "__main__":
+    main()

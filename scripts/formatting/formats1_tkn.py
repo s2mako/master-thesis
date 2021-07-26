@@ -48,7 +48,7 @@ def save_features(features, tknfolder, params, textfilename):
 
 def check_outfile_path(srcfolder, params):
     pos = params["pos"]
-    filename = f"tkn-{'_'.join(pos)}.txt"
+    filename = f"tkn-{'_'.join(sorted(pos))}.txt"
     outfile_path = join(srcfolder, filename)
     if exists(outfile_path):
         print("--clearing existing file: " + filename)

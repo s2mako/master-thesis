@@ -14,6 +14,8 @@ import glob
 import os
 import re
 import csv
+from pathlib import Path
+
 import pandas as pd
 import numpy as np
 from os.path import join
@@ -52,6 +54,11 @@ def select_features(tagged, params):
             features = [token.split("_")[0].lower() for token in tagged if len(token.split("_"))==3]
         else: 
             features = [token.split("_")[0].lower() for token in tagged if len(token.split("_"))==3 and token.split("_")[1] in params["pos"]]
+    if params["token"] == "mixed":
+        if params["pos"] == "all":
+            features = [token.lower() for token in tagged if len(token.split("_"))==3]
+        else:
+            features = [token.lower() for token in tagged if len(token.split("_"))==3 and token.split("_")[1] in params["pos"]]
     return features
 
 
@@ -80,13 +87,12 @@ def count_allngrams(allngrams, params):
     return filteredcounts
 
 
-def save_counts(counts, ngrfolder): 
+def save_counts(counts, ngrfolder, params):
     counts = pd.Series(counts)
     counts.sort_values(ascending=False, inplace=True)
     print(counts.head(20))
-    with open(join(ngrfolder, "allngrs.tsv"), "w", encoding="utf8") as outfile:
+    with open(join(ngrfolder, f"allngrs-{params['ngram']}.tsv"), "w", encoding="utf8") as outfile:
         counts.to_csv(outfile, sep="\t")
-    
 
     
 
@@ -94,12 +100,12 @@ def save_counts(counts, ngrfolder):
 # MAIN
 # ====================================
 
-def main(taggedfile, ngrfolder, params):
+def main(segmentfile, ngrfolder, params):
     print("\nformats5_ngr")
-    if not os.path.exists(ngrfolder):
-        os.makedirs(ngrfolder)
+    ngrfolder = Path(ngrfolder)
+    ngrfolder.mkdir(parents=True, exist_ok=True)
     allngrams = []
-    with open(taggedfile, "r", encoding="utf-8") as f:
+    with open(segmentfile, "r", encoding="utf-8") as f:
         for text in f.read().split("\n"):
             filename, content = text.split("\t")
             print("--"+filename)
@@ -109,7 +115,7 @@ def main(taggedfile, ngrfolder, params):
             allngrams.extend(ngrams)
             #save_features(ngrams, ngrfolder, filename)
     filteredcounts = count_allngrams(allngrams, params)
-    save_counts(filteredcounts, ngrfolder)
+    save_counts(filteredcounts, ngrfolder, params)
 
 
 if __name__ == "__main__":

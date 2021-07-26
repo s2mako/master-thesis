@@ -85,18 +85,19 @@ def save_tdm(tdm, targetfolder, filename, params):
 # MAIN
 # ====================================
 
-def main(sourcefolder, targetfolder, params):
+def main(taggedfile, targetfolder, params):
     print("\nformats3_tdm")
     if not os.path.exists(targetfolder):
         os.makedirs(targetfolder)
-    for textfile in glob.glob(join(sourcefolder, "*.txt")):
-        filename = get_filename(textfile)
-        print("--"+filename)
-        tagged = read_text(textfile).split("\n")
-        features = create_features(tagged, params)
-        segments = create_segments(features, params)
-        tdm = make_tdm(segments, filename)
-        save_tdm(tdm, targetfolder, filename, params)
+    with open(taggedfile, "r") as file:
+        for textfile in glob.glob(join(taggedfile, "*.txt")):
+            filename = get_filename(textfile)
+            print("--"+filename)
+            tagged = read_text(textfile).split("\n")
+            features = create_features(tagged, params)
+            segments = create_segments(features, params)
+            tdm = make_tdm(segments, filename)
+            save_tdm(tdm, targetfolder, filename, params)
 
 if __name__ == "__main__":
-    main(sourcefolder, targetfolder, params)
+    main(taggedfile, targetfolder, params)

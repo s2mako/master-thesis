@@ -34,16 +34,6 @@ def read_text(textfile):
         tagged = infile.read()
         return tagged
 
-
-def create_segments(tagged, params):
-    """
-    Creates segments out of tagged Text.
-
-    """
-    segments = [tagged[x:x+params["seglen"]] for x in range(0, len(tagged), params["seglen"])]
-    return segments
-
-
 def scramble_segments(segments, params): 
     scrambled = []
     for seg in segments: 

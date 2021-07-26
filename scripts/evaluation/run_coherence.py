@@ -22,12 +22,14 @@ import palmetto_coherence
 # ==================================
 
 wdir = Path("../..")
-modelsdir = wdir.joinpath("6_models")
-scoresdir = wdir.joinpath("7_scores")
+modelsdir = wdir.joinpath("6_evaluation")
+scoresdir = wdir.joinpath("7_evaluation")
+modelsdir = wdir.joinpath("7_evaluation", "gensim", "models")
+
 
 # ==================================
 # Call imported scripts
 # ==================================
 
-palmetto_coherence.main(modelsdir, scoresdir, params)
-#gensim_coherence.main(modelsdir, scoresdir, params)
+#palmetto_coherence.main(modelsdir, scoresdir, params)
+gensim_coherence.main(modelsdir, params)

@@ -1,5 +1,3 @@
-import re
-
 # ====================================
 # FUNCTIONS
 # ====================================
@@ -10,6 +8,7 @@ def write_to_file(segments, outfile_path):
         for seg in segments:
             cf.write(" ".join(seg))
             cf.write("\n")
+
 
 def create_segments(lines, params):
     return [lines[x:x + params["seglen"]] for x in range(0, len(lines), params["seglen"])]

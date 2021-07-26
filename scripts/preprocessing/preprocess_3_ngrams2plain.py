@@ -8,7 +8,7 @@ import random
 def check_outfile_path(in_file, corpusdir, params):
     seglen = params["seglen"]
     format = in_file.stem.split("-")[0]
-    filename = f"{format}-{seglen}.txt"
+    filename = f"{format}-{str(params['ngram'])}-{seglen}.txt"
     outfile_path = corpusdir.joinpath(filename)
     if outfile_path.exists():
         print("--deleting existing file: " + filename)
@@ -60,11 +60,12 @@ def create_text(lines):
 # ====================================
 
 
-def main(ngramsfile, corpusdir, params):
+def main(ngrdir, corpusdir, params):
     print("running: ngr_to_plain")
-    outfile_path = check_outfile_path(ngramsfile, corpusdir, params)  # deletes existing file
-    with ngramsfile.open("r") as f:
-        print(f"--{ngramsfile.stem}")
+    ngrfile = ngrdir.joinpath(f"allngrs-{params['ngram']}.tsv")
+    outfile_path = check_outfile_path(ngrfile, corpusdir, params)  # deletes existing file
+    with ngrfile.open("r") as f:
+        print(f"--{ngrfile.stem}")
         lines = read_file(f)
         text = create_text(lines)
         scrambled = scramble(text)

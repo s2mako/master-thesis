@@ -17,15 +17,17 @@ features.
 # =================================
 # Import statements
 # =================================
+from pathlib import Path
 
 import formats0_tagging
+import formats0_segmenting
 import formats1_tkn
 import formats2_frq
 import formats3_tdm
 import formats4_src
 import formats5_ngr
-from formatting import formats5_sel
 from os.path import join
+from library import create_segfolder
 from scripts.parameters import params
 
 # ==================================
@@ -33,37 +35,41 @@ from scripts.parameters import params
 # ==================================
 
 # ==================================
-# Files and folders (don't change)
+# Files and folders (done't change)
 # ==================================
 
 wdir = join("../..")
-plainfolder = join(wdir, "1_plain/original")
-taggedfolder = join(wdir, "2_tagged", "")
+sourcefolder = join(wdir, "0_source")
+taggedfolder = join(wdir, "1_tagged")
 formatsfolder = join(wdir, "3_formats")
-taggedfile = join(wdir, "2_tagged", "tagged.txt")
+taggedfile = join(wdir, "1_tagged", "tagged.txt")
+input_segmentsfolder = join(wdir, "2_segmented")
+input_segmentfile = join(input_segmentsfolder, f"segmented-{params['seglen']}.txt")
 
-tknfolder = join(wdir, "3_formats", "tkn")
-frqfolder = join(wdir, "3_formats", "frq", "")
-tdmfolder = join(wdir, "3_formats", "tdm", "")
-srcfolder = join(wdir, "4_plain")
-ngrfolder = join(wdir, "3_formats", "ngr", "")
-selfolder = join(wdir, "3_formats", "sel", "")
+output_segmentsfolder = join(formatsfolder, f"seglen-{params['seglen']}")
+tknfolder = join(output_segmentsfolder, "tkn")
+frqfolder = join(output_segmentsfolder, "frq")
+tdmfolder = join(output_segmentsfolder, "tdm")
+ngrfolder = join(output_segmentsfolder, "ngr")
+selfolder = join(output_segmentsfolder, "sel")
+srcfolder = join(wdir, "4_plain", f"seglen-{params['seglen']}")
+
 
 
 # ==================================
 # Call imported scripts
 # ==================================
-
-
-
 #formats0_tagging.main(plainfolder, taggedfolder, params)
 
+
+#formats0_segmenting.main(taggedfile, input_segmentsfolder, params)
+
 #formats2_frq.main(taggedfile, frqfolder, params)
-formats5_ngr.main(taggedfile, ngrfolder, params)
-#formats5_sel.main(taggedfile, selfolder, params)
+formats5_ngr.main(input_segmentfile, output_segmentsfolder, params)
+#formats5_ngr.main(taggedfile, output_segmentsfolder, params)
 
-#formats1_tkn.main(taggedfile, tknfolder, params)
+#formats1_tkn.main(input_segmentfile, output_segmentsfolder, params)
 
-#formats4_src.main(taggedfile, srcfolder, params)
+#formats4_src.main(input_segmentfile, srcfolder, params)
 
-#formats3_tdm.main(taggedfolder, tdmfolder, params)
+#formats3_tdm.main(taggedfile, tdmfolder, params)
