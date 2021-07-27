@@ -29,40 +29,50 @@ import formats5_ngr
 from os.path import join
 from library import create_segfolder
 from scripts.parameters import params
+from pathlib import Path
 
 # ==================================
 # Parameters (need to be set in scripts/parameters)
 # ==================================
 
+# ====================================
+# FUNCTIONS
+#====================================
+
+
+def check_inputfile(path, taggedfile):
+    if not path.is_file():
+        print("Segmentfile not found. Creating segmentfile ", params['seglen'])
+        formats0_segmenting.main(taggedfile, input_segmentsfolder, params)
+    return path
+
 # ==================================
 # Files and folders (done't change)
 # ==================================
 
-wdir = join("../..")
-sourcefolder = join(wdir, "0_source")
-taggedfolder = join(wdir, "1_tagged")
-formatsfolder = join(wdir, "3_formats")
-taggedfile = join(wdir, "1_tagged", "tagged.txt")
-input_segmentsfolder = join(wdir, "2_segmented")
-input_segmentfile = join(input_segmentsfolder, f"segmented-{params['seglen']}.txt")
+wdir = Path("../..")
+sourcefolder = wdir.joinpath("0_source")
+taggedfolder = wdir.joinpath("1_tagged")
+formatsfolder = wdir.joinpath( "3_formats")
+taggedfile = wdir.joinpath("1_tagged", "tagged.txt")
+input_segmentsfolder = wdir.joinpath("2_segmented")
+segmentfile_name = input_segmentsfolder.joinpath(f"segmented-{params['seglen']}.txt")
+input_segmentfile = check_inputfile(segmentfile_name, taggedfile)
 
-output_segmentsfolder = join(formatsfolder, f"seglen-{params['seglen']}")
-tknfolder = join(output_segmentsfolder, "tkn")
-frqfolder = join(output_segmentsfolder, "frq")
-tdmfolder = join(output_segmentsfolder, "tdm")
-ngrfolder = join(output_segmentsfolder, "ngr")
-selfolder = join(output_segmentsfolder, "sel")
-srcfolder = join(wdir, "4_plain", f"seglen-{params['seglen']}")
-
+output_segmentsfolder = formatsfolder.joinpath(f"seglen-{params['seglen']}")
+tknfolder = output_segmentsfolder.joinpath("tkn")
+frqfolder = output_segmentsfolder.joinpath("frq")
+tdmfolder = output_segmentsfolder.joinpath("tdm")
+ngrfolder = output_segmentsfolder.joinpath("ngr")
+selfolder = output_segmentsfolder.joinpath("sel")
+srcfolder = wdir.joinpath("4_plain", f"seglen-{params['seglen']}")
 
 
 # ==================================
 # Call imported scripts
 # ==================================
+
 #formats0_tagging.main(plainfolder, taggedfolder, params)
-
-
-#formats0_segmenting.main(taggedfile, input_segmentsfolder, params)
 
 #formats2_frq.main(taggedfile, frqfolder, params)
 formats5_ngr.main(input_segmentfile, output_segmentsfolder, params)
