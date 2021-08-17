@@ -9,12 +9,10 @@ text constructed from derived format.
 # =================================
 
 from pathlib import Path
-import preprocess_0_tagged_to_plain
-import preprocess_1_tkn_to_plain
-import preprocess_2_frq_to_plain
-#import preprocess_3_src_to_plain
-#import preprocess_4_ngr_to_plain
-import preprocess_3_ngrams2plain
+import seg2plain
+import frq2plain
+import ngrams2plain
+import tkn2plain
 import preprocess
 from scripts.parameters import params
 
@@ -27,23 +25,26 @@ wdir = Path("../..")
 resourcesdir = wdir.joinpath("resources")
 stoplist = resourcesdir.joinpath("stoplist.txt")
 sourcedir = wdir.joinpath("0_source")
-taggedfile = wdir.joinpath("2_tagged", "tagged.txt")
-formatsdir = wdir.joinpath("3_formats")
-pseudodir = wdir.joinpath("4_plain", f"seglen-{params['seglen']}")
+taggedfile = wdir.joinpath("1_tagged", "tagged.txt")
+segdir = wdir.joinpath(f"2_segmented")
+segfile = segdir.joinpath(f"segmented-{params['seglen']}.txt")
+formatsdir = wdir.joinpath("3_formats", f"seglen-{params['seglen']}")
+plaindir = wdir.joinpath("4_plain", f"seglen-{params['seglen']}")
 # corpusdir = wdir.joinpath("5_corpus", format, str(seglen))
 corpusdir = wdir.joinpath("5_corpus", f"seglen-{params['seglen']}")
 
 # format sources
-tknsource = formatsdir.joinpath("tkn")
-tknfile = tknsource.joinpath(f"tkn-{'_'.join(sorted(params['pos']))}.txt")
+#tknsource = formatsdir.joinpath("tkn")
+tknfile = segdir.joinpath(f"tkn-.txt")
 tdmsource = formatsdir.joinpath("tkn-tm")
-srcfile = pseudodir.joinpath(f"src-{params['seglen']}.txt")
-frqsource = formatsdir.joinpath("frq")
+srcfile = plaindir.joinpath(f"src-{params['seglen']}.txt")
+frqinput = wdir.joinpath("3_formats", "frq")
+frqoutput = wdir.joinpath("4_plain", "frq")
 ngrdir = formatsdir.joinpath("ngr")
 testdir = Path(r"/4_plain\test")
 
 # pseudoplain target
-tknpseudodir = pseudodir.joinpath("tkn-tm")
+tknpseudodir = plaindir.joinpath("tkn-tm")
 #tdmpseudodir = pseudodir.joinpath("tdm", "_".join(filter))
 #srcpseudodir = pseudodir.joinpath("src", str(seglen_read), "_".join(filter))
 
@@ -52,9 +53,9 @@ tknpseudodir = pseudodir.joinpath("tkn-tm")
 # Call imported scripts
 # ==================================
 
-#preprocess_0_tagged_to_plain.main(taggedfile, pseudodir, params)
-#preprocess_0_tagged_to_plain.main(tknfile, pseudodir, params)
-#preprocess_2_frq_to_plain.main(frqsource, pseudodir, params)
-#preprocess_3_ngrams2plain.main(ngrdir, pseudodir, params)
-preprocess.main(pseudodir, corpusdir, stoplist, params)
+#seg2plain.main(segfile, plaindir)
+#tkn2plain.main(formatsdir, plaindir)
+#frq2plain.main(frqinput, plaindir, params)
+ngrams2plain.main(formatsdir, plaindir, params)
+#preprocess.main(plaindir, corpusdir, stoplist, params)
 #preprocess.main(testdir, corpusdir, stoplist, params)

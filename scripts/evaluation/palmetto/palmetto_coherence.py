@@ -2,12 +2,14 @@
 # Parameters (need to be set)
 # ==================================
 import re
+import shutil
 
 from palmettopy.palmetto import Palmetto
 
-endpoint = "cv"  #
-topic_count = 60
+endpoint = "cv"
+topic_count = 20
 seglen = 500
+retries = 10 # if used with online service
 
 
 # =================================
@@ -20,7 +22,7 @@ from pathlib import Path
 # Files and folders
 # ==================================
 
-wdir = Path("../..")
+wdir = Path("../../..")
 modelsdir = wdir.joinpath("6_evaluation")
 scoresdir = wdir.joinpath("6_evaluation")
 modelsdir = wdir.joinpath("6_evaluation", "models", "mallet", f"seglen-{seglen}", f"topics-{topic_count}")
@@ -47,13 +49,21 @@ def get_coherences(top_words):
     print("connecting to palmetto service...")
     for dict in top_words:
         for topic, words in dict.items():
-            print(topic, words[:10])
-            score = palmetto.get_coherence(words[:10], endpoint)  # I needed to increase timeout in source code
-            yield {topic: score}
+            # Try again when connection fails
+            for i in range(0, retries):
+                try:
+                    print("calculating ", topic, "...")
+                    score = palmetto.get_coherence(words[:10], endpoint)
+                    print(score, words[:10])
+                    break
+                except:
+                    print("next try: ", str(i+1))
+                    continue
+            yield {topic: [score, words[:10]]}
 
 
 def write_to_file(scores, outfile_path):
-    with outfile_path.open("w", encoding="utf-8") as of:
+    with outfile_path.open("a", encoding="utf-8") as of:
         for dict in scores:
             for topic, values in dict.items():
                 coherence = values[0]
@@ -64,14 +74,28 @@ def write_to_file(scores, outfile_path):
 
 
 def create_outfile_path(in_file, scoresdir):
+    # create subfolders
     palmettodir = scoresdir.joinpath("palmetto")
-    palmettodir.mkdir(exist_ok=True)
-    format = in_file.parent.name
-    filename = f"{format}-{seglen}-{topic_count}.csv"
-    outfile_path = palmettodir.joinpath(filename)
+    segdir = palmettodir.joinpath(f"seglen-{seglen}")
+    topicdir = segdir.joinpath(f"topics-{topic_count}")
+    format = in_file.parents[1].stem.split("-")[0]
+    formatdir = topicdir.joinpath(format)
+    formatdir.mkdir(exist_ok=True, parents=True)
+    # create file
+    iteration = in_file.parent.stem.split("-")[1]
+    filename = f"{in_file.parent.name}.csv"
+    outfile_path = formatdir.joinpath(filename)
     if outfile_path.exists():
         print("--warning: file already exists")
     return outfile_path
+
+
+def move_to_done(file):
+    done_folder = file.parents[1].joinpath("done")
+    done_folder.mkdir(exist_ok=True, parents=True)
+    folder = file.parent
+    folder.rename(done_folder)
+
 
 # ==================================
 # Main
@@ -79,12 +103,13 @@ def create_outfile_path(in_file, scoresdir):
 
 def main(modelsdir, scoresdir):
     print("palmetto coherence")
-    for file in modelsdir.glob(f"*/keys.txt"):
+    for file in sorted(modelsdir.rglob("*/iteration*/keys.txt")):
         print(f"--{file.parent}")
         outfile_path = create_outfile_path(file, scoresdir)  # deletes existing file
         top_words = extract_top_words(file)  # used for palmetto coherence - takes a while
         scores = get_coherences(top_words)
         write_to_file(scores, outfile_path)
+        #move_to_done(file)
 
 
 if __name__ == "__main__":

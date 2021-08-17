@@ -68,14 +68,6 @@ def create_ngrams(ngrams, params):
     return ngrams
 
 
-def save_features(ngrams, ngrfolder, filename): 
-    ngrams = "\n".join(ngrams)
-    filepath = join(ngrfolder, filename+".txt")
-    with open(filepath, "w", encoding="utf-8") as outfile:
-        outfile.write(ngrams)
-
-
-
 def count_allngrams(allngrams, params):
     from collections import Counter
     allcounts = dict(Counter(allngrams))
@@ -87,12 +79,12 @@ def count_allngrams(allngrams, params):
     return filteredcounts
 
 
-def save_counts(counts, ngrfolder, params):
+def save_counts(outfile, counts):
     counts = pd.Series(counts)
     counts.sort_values(ascending=False, inplace=True)
-    print(counts.head(20))
-    with open(join(ngrfolder, f"allngrs-{params['ngram']}.tsv"), "w", encoding="utf8") as outfile:
+    with open(outfile, "a", encoding="utf8") as outfile:
         counts.to_csv(outfile, sep="\t")
+        outfile.write("<seg>")
 
     
 
@@ -104,18 +96,19 @@ def main(segmentfile, ngrfolder, params):
     print("\nformats5_ngr")
     ngrfolder = Path(ngrfolder)
     ngrfolder.mkdir(parents=True, exist_ok=True)
-    allngrams = []
+    outfile = ngrfolder.joinpath(f"allngrs-{params['ngram']}_thr-{params['threshold']}.tsv")
+    if outfile.is_file(): outfile.unlink()
     with open(segmentfile, "r", encoding="utf-8") as f:
         for text in f.read().split("\n"):
+            allngrams = []
             filename, content = text.split("\t")
             print("--"+filename)
             tagged = read_text(content)
             features = select_features(tagged, params)
             ngrams = create_ngrams(features, params)
             allngrams.extend(ngrams)
-            #save_features(ngrams, ngrfolder, filename)
-    filteredcounts = count_allngrams(allngrams, params)
-    save_counts(filteredcounts, ngrfolder, params)
+            filteredcounts = count_allngrams(allngrams, params)
+            save_counts(outfile, filteredcounts)
 
 
 if __name__ == "__main__":

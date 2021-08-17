@@ -38,7 +38,6 @@ def get_counts(features):
 
 
 def save_counts(counts, frqfolder, filename):
-    filepath = join(frqfolder, filename+".txt")
     with open(filepath, "w", encoding="utf-8") as outfile:
         counts.to_csv(outfile, sep="\t")
 
@@ -46,10 +45,7 @@ def save_counts(counts, frqfolder, filename):
 # MAIN
 # ====================================
 
-def main(taggedfile, frqfolder, params):
-    print("\nformats2_frq")
-    if not os.path.exists(frqfolder):
-        os.makedirs(frqfolder)
+def create_frq(taggedfile, frqfolder, params):
     with open(taggedfile, "r", encoding="utf-8") as f:
         for text in f.read().split("\n"):
             filename, content = text.split("\t")
@@ -58,6 +54,27 @@ def main(taggedfile, frqfolder, params):
             features = select_features(tagged, params)
             counts = get_counts(features)
             save_counts(counts, frqfolder, filename)
+
+
+def create_tdm(segmentfile, frqfolder, params):
+    with open(segmentfile, "r", encoding="utf-8") as f:
+        for text in f.read().split("\n"):
+            filename, content = text.split("\t")
+            print("--" + filename)
+            tagged = content.split(" ")
+            features = select_features(tagged, params)
+            counts = get_counts(features)
+            save_counts(counts, frqfolder, filename)
+
+
+def main(inputfile, frqfolder, params):
+    print("\nformats2_frq")
+    frqfolder.mkdir(exist_ok=True, parents=True)
+    filepath = join(frqfolder, ".txt")
+    if inputfile.stem == "tagged":
+        create_frq(inputfile, frqfolder, params)
+    else:
+        create_tdm(inputfile, frqfolder, params)
 
 if __name__ == "__main__":
     main(sourcefolder, frqfolder, params)

@@ -34,17 +34,17 @@ def read_text(textfile):
         tagged = infile.read()
         return tagged
 
-def scramble_segments(segments, params): 
+def scramble_segments(content):
     scrambled = []
-    for seg in segments: 
-        random.shuffle(seg) # scrambling
-        seg = " ".join(seg)
-        scrambled.append(seg)
+    seg = content.split(" ")
+    random.shuffle(seg) # scrambling
+    seg = " ".join(seg)
+    scrambled.append(seg)
     return scrambled
    
 
-def save_scrambled(scrambled, outfile_path, params):
-    scrambled = "\n".join(scrambled)
+def save_scrambled(scrambled, outfile_path):
+    scrambled = " ".join(scrambled)
     with open(outfile_path, "a", encoding="utf-8") as outfile:
         outfile.write(scrambled)
         outfile.write("\n")
@@ -65,19 +65,17 @@ def check_outfile_path(srcfolder, params):
 # ====================================
 
 
-def main(taggedfile, srcfolder, params):
+def main(segmentfile, srcfolder, params):
     print("\nformats4_src")
     outfile_path = check_outfile_path(srcfolder, params)  # deletes content of existing file
     if not exists(srcfolder):
         os.makedirs(srcfolder)
-    with open(taggedfile, "r", encoding="utf-8") as f:
-        for text in f.read().split("\n"):
-            filename, content = text.split("\t")
+    with open(segmentfile, "r", encoding="utf-8") as f:
+        for segment in f.read().split("\n"):
+            filename, content = segment.split("\t")
             print("--" + filename)
-            tagged = content.split(" ")
-            segments = create_segments(tagged, params)
-            scrambled = scramble_segments(segments, params)
-            save_scrambled(scrambled, outfile_path, params)
+            scrambled = scramble_segments(content)
+            save_scrambled(scrambled, outfile_path)
 
 if __name__ == "__main__":
     main(sourcefolder, srcfolder, params)

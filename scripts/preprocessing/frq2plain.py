@@ -59,7 +59,8 @@ def read_file(file):
 
 
 def main(sourcedir, targetdir, params):
-    print("running: frq_to_plain")
+    print("running: frq2plain")
+    targetdir.mkdir(exist_ok=True, parents=True)
     outfile_path = check_outfile_path(targetdir, params)  # deletes existing file
     for file in sourcedir.glob("*.txt"):
         with file.open("r") as f:
@@ -72,4 +73,4 @@ def main(sourcedir, targetdir, params):
 
 
 if __name__ == "__main__":
-    main(formatsdir, sourcedir, params)
+    main(sourcedir, targetdir, params)
