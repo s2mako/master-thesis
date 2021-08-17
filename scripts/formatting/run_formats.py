@@ -26,8 +26,6 @@ import formats2_frq
 import formats3_tdm
 import formats4_src
 import formats5_ngr
-from os.path import join
-from library import create_segfolder
 from scripts.parameters import params
 from pathlib import Path
 
@@ -75,6 +73,7 @@ srcfolder = wdir.joinpath("4_plain", f"seglen-{params['seglen']}")
 #formats0_tagging.main(plainfolder, taggedfolder, params)
 
 #formats2_frq.main(taggedfile, frqfolder, params)
+#formats2_frq.main(input_segmentfile, frqfolder, params)
 formats5_ngr.main(input_segmentfile, output_segmentsfolder, params)
 #formats5_ngr.main(taggedfile, output_segmentsfolder, params)
 
@@ -82,4 +81,4 @@ formats5_ngr.main(input_segmentfile, output_segmentsfolder, params)
 
 #formats4_src.main(input_segmentfile, srcfolder, params)
 
-#formats3_tdm.main(taggedfile, tdmfolder, params)
+#formats3_tdm.main(input_segmentfile, tdmfolder, params)

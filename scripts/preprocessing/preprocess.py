@@ -11,14 +11,10 @@ def lemmatize(seg, params):
     """
     pos = params["pos"]
     for s in seg.split(" "):
-        # if not do_lemmatize:
-        #     yield clean_token(s)
-        #     continue
         components = re.split("_", s)
         if len(components) != 3:
             pass
-            #print("skipped: " + s)
-        elif (components[1] in pos):
+        elif (components[1].upper() in pos):
             # yield lemma
             yield clean_token(components[2].lower())
 
